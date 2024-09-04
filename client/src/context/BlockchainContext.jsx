@@ -29,11 +29,11 @@ BlockchainProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-export default BlockchainProvider;
-
 /**
  * Customer hook to access BlockchainService from any functional component.
  *
  * @returns {Object} The blockchainService instance for accessing blockchain data and functionality.
  */
-export const useBlockchain = () => useContext(BlockchainContext);
+const useBlockchain = () => useContext(BlockchainContext);
+
+export { BlockchainProvider, useBlockchain };
