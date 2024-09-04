@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/AbbasFaeqHadi/savjeecoin-react-frontend" rel="noopener">
-    <img width="100" height="150" src="./src/assets/logo-savjee.svg" alt="SavjeeCoin Logo">
+    <img width="100" height="150" src="./client/src/assets/logo-savjee.svg" alt="SavjeeCoin Logo">
   </a>
 </p>
 
@@ -26,24 +26,27 @@ Ensure you have [Node.js](https://nodejs.org/) and npm (Node Package Manager) in
 
    ```bash
    git clone https://github.com/AbbasFaeqHadi/savjeecoin-react-frontend.git
-   cd savjeecoin-react-frontend
+   cd blockchain
    ```
 
-2. **Change to the client directory:**
+2. **Change to the savjeecoin directory and install dependencies:**
 
    ```bash
-   cd client
-   ```
-
-3. **Install dependencies:**
-
-   ```bash
+   cd savjeecoin
    npm install
    ```
 
-4. **Run the application:**
+3. **Go back to previous directory**
 
    ```bash
+   cd ..
+   ```
+
+4. **Change to the client directory, install dependencies and start the application**
+
+   ```bash
+   cd client
+   npm install
    npm run dev
    ```
 
