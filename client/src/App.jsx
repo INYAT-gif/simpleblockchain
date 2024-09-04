@@ -1,35 +1,47 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Navbar from "./components/navbar/Navbar";
+import BlockchainViewer from "./pages/blockchain-viewer/BlockchainViewer";
+import { BlockchainProvider } from "./context/BlockchainContext";
+import Settings from "./pages/settings/Settings";
+import CreateTransaction from "./pages/create-transaction/CreateTransaction";
+import PendingTransactions from "./pages/pending-transactions/PendingTransactions";
+import WalletBalance from "./pages/wallet-balance/WalletBalance";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+/**
+ * App component serves as the root component of the application.,
+ * providing global state management with BlockchainProvider and
+ * setting upp routes for different views/pages using React Router.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered component for the app.
+ */
+const App = () => {
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <BlockchainProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          {/* Display blocks on chain at the root URL */}
+          <Route path="/" element={<BlockchainViewer />} />
 
-export default App
+          {/* Display settings at the '/settings' URL */}
+          <Route path="/settings" element={<Settings />} />
+
+          {/* Display create transaction at the '/new/transaction' URL */}
+          <Route path="/new/transaction" element={<CreateTransaction />} />
+
+          {/* Display pending transactions at the '/new/transaction/pending' URL */}
+          <Route
+            path="/new/transaction/pending"
+            element={<PendingTransactions />}
+          />
+
+          {/* Display wallet balance at the '/wallet/:address' URL */}
+          <Route path="/wallet/:address" element={<WalletBalance />} />
+        </Routes>
+      </Router>
+    </BlockchainProvider>
+  );
+};
+
+export default App;

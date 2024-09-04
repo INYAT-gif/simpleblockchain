@@ -1,10 +1,9 @@
-'use strict';
-const crypto = require('crypto');
-const EC = require('elliptic').ec;
-const ec = new EC('secp256k1');
-const debug = require('debug')('savjeecoin:blockchain');
+import SHA256 from 'crypto-js/sha256';
+import { ec as EC } from 'elliptic';
 
-class Transaction {
+const ec = new EC('secp256k1');
+
+export class Transaction {
   /**
    * @param {string} fromAddress
    * @param {string} toAddress
@@ -23,10 +22,9 @@ class Transaction {
    * @returns {string}
    */
   calculateHash() {
-    return crypto
-      .createHash('sha256')
-      .update(this.fromAddress + this.toAddress + this.amount + this.timestamp)
-      .digest('hex');
+    return SHA256(
+      this.fromAddress + this.toAddress + this.amount + this.timestamp
+    ).toString();
   }
 
   /**
@@ -34,9 +32,10 @@ class Transaction {
    * object that contains a private key). The signature is then stored inside the
    * transaction object and later stored on the blockchain.
    *
-   * @param {string} signingKey
+   * @param {Object} signingKey
    */
   sign(signingKey) {
+  
     // You can only send a transaction from the wallet that is linked to your
     // key. So here we check if the fromAddress matches your publicKey
     if (signingKey.getPublic('hex') !== this.fromAddress) {
@@ -72,7 +71,7 @@ class Transaction {
   }
 }
 
-class Block {
+export class Block {
   /**
    * @param {number} timestamp
    * @param {Transaction[]} transactions
@@ -93,15 +92,12 @@ class Block {
    * @returns {string}
    */
   calculateHash() {
-    return crypto
-      .createHash('sha256')
-      .update(
-        this.previousHash +
-          this.timestamp +
-          JSON.stringify(this.transactions) +
-          this.nonce
-      )
-      .digest('hex');
+    return SHA256(
+      this.previousHash +
+        this.timestamp +
+        JSON.stringify(this.transactions) +
+        this.nonce
+    ).toString();
   }
 
   /**
@@ -118,7 +114,7 @@ class Block {
       this.hash = this.calculateHash();
     }
 
-    debug(`Block mined: ${this.hash}`);
+    console.log(`Block mined: ${this.hash}`);
   }
 
   /**
@@ -138,7 +134,7 @@ class Block {
   }
 }
 
-class Blockchain {
+export class Blockchain {
   constructor() {
     this.chain = [this.createGenesisBlock()];
     this.difficulty = 2;
@@ -157,7 +153,7 @@ class Blockchain {
    * Returns the latest block on our chain. Useful when you want to create a
    * new Block and you need the hash of the previous Block.
    *
-   * @returns {Block[]}
+   * @returns {Block}
    */
   getLatestBlock() {
     return this.chain[this.chain.length - 1];
@@ -185,7 +181,7 @@ class Blockchain {
     );
     block.mineBlock(this.difficulty);
 
-    debug('Block successfully mined!');
+    console.log('Block successfully mined!');
     this.chain.push(block);
 
     this.pendingTransactions = [];
@@ -220,7 +216,7 @@ class Blockchain {
 
     // Get all other pending transactions for the "from" wallet
     const pendingTxForWallet = this.pendingTransactions.filter(
-      tx => tx.fromAddress === transaction.fromAddress
+      (tx) => tx.fromAddress === transaction.fromAddress
     );
 
     // If the wallet has more pending transactions, calculate the total amount
@@ -228,19 +224,19 @@ class Blockchain {
     // transaction.
     if (pendingTxForWallet.length > 0) {
       const totalPendingAmount = pendingTxForWallet
-        .map(tx => tx.amount)
-        .reduce((prev, curr) => prev + curr);
+        .map((tx) => tx.amount)
+        .reduce((prev, curr) => prev + curr, 0);
 
       const totalAmount = totalPendingAmount + transaction.amount;
       if (totalAmount > walletBalance) {
         throw new Error(
-          'Pending transactions for this wallet is higher than its balance.'
+          'Pending transactions for this wallet are higher than its balance.'
         );
       }
     }
 
     this.pendingTransactions.push(transaction);
-    debug('transaction added: %s', transaction);
+    console.log('Transaction added:', transaction);
   }
 
   /**
@@ -264,7 +260,7 @@ class Blockchain {
       }
     }
 
-    debug('getBalanceOfAdrees: %s', balance);
+    console.log('Balance of address:', balance);
     return balance;
   }
 
@@ -286,7 +282,7 @@ class Blockchain {
       }
     }
 
-    debug('get transactions for wallet count: %s', txs.length);
+    console.log('Transactions for wallet:', txs.length);
     return txs;
   }
 
@@ -306,21 +302,21 @@ class Blockchain {
       return false;
     }
 
-    // Check the remaining blocks on the chain to see if there hashes and
+    // Check the remaining blocks on the chain to see if their hashes and
     // signatures are correct
     for (let i = 1; i < this.chain.length; i++) {
       const currentBlock = this.chain[i];
       const previousBlock = this.chain[i - 1];
 
-      if (previousBlock.hash !== currentBlock.previousHash) {
+      if (currentBlock.hash !== currentBlock.calculateHash()) {
+        return false;
+      }
+
+      if (currentBlock.previousHash !== previousBlock.hash) {
         return false;
       }
 
       if (!currentBlock.hasValidTransactions()) {
-        return false;
-      }
-
-      if (currentBlock.hash !== currentBlock.calculateHash()) {
         return false;
       }
     }
@@ -328,7 +324,3 @@ class Blockchain {
     return true;
   }
 }
-
-module.exports.Blockchain = Blockchain;
-module.exports.Block = Block;
-module.exports.Transaction = Transaction;
